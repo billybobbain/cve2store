@@ -134,23 +134,59 @@ def llm_up():
         return False
 
 
+def gpu_busy():
+    """Another program (not the model server) holding >1 GB of GPU memory -- e.g. a
+    long render.  Waking a large model next to it could run the GPU out of memory, so
+    the day is deferred instead.  No nvidia-smi -> never busy.  LLM_GPU_GUARD=0 disables."""
+    if os.environ.get("LLM_GPU_GUARD", "1") == "0":
+        return None
+    try:
+        out = subprocess.run(["nvidia-smi", "--query-compute-apps=process_name,used_memory",
+                              "--format=csv,noheader,nounits"], capture_output=True,
+                             text=True, timeout=20).stdout
+    except Exception:
+        return None
+    for line in out.strip().splitlines():
+        name, _, mem = line.rpartition(",")
+        if "llama" not in name.lower() and mem.strip().isdigit() and int(mem) > 1000:
+            return f"{os.path.basename(name.strip())} ({mem.strip()} MiB)"
+    return None
+
+
 def ensure_llm():
-    """Use the server if it's up; else run LLM_START_CMD (from the config) and wait."""
+    """-> (ok, process we started or None).  Use the server if it's up; else run
+    LLM_START_CMD (from the config) and wait."""
+    busy = gpu_busy()
+    if busy:
+        print(f"GPU in use by {busy}; deferring", file=sys.stderr)
+        return False, None
     if llm_up():
-        return True
+        return True, None
     cmd = os.environ.get("LLM_START_CMD")
     if not cmd:
         print("LLM server not reachable and no LLM_START_CMD configured", file=sys.stderr)
-        return False
+        return False, None
     print(f"starting the model: {cmd}", file=sys.stderr)
-    subprocess.Popen(cmd, shell=True, start_new_session=True,
-                     stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+    proc = subprocess.Popen(cmd, shell=True, start_new_session=True,
+                            stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
     for _ in range(90):
         time.sleep(4)
         if llm_up():
-            return True
+            return True, proc
     print("model server did not come up", file=sys.stderr)
-    return False
+    stop_llm(proc)
+    return False, None
+
+
+def stop_llm(proc):
+    """Stop a server we started (its whole process group), leaving others alone."""
+    if proc:
+        import signal
+        try:
+            os.killpg(proc.pid, signal.SIGTERM)
+            proc.wait(timeout=30)
+        except Exception:
+            pass
 
 
 # ---- 6. digest ---------------------------------------------------------------------------
@@ -243,8 +279,11 @@ def main():
     if not days:
         print("nothing to do: up to date")
         return
-    llm_ok = ensure_llm()
-    ok = all([run_day(con, str(d), a.country, llm_ok) for d in days])
+    llm_ok, started = ensure_llm()
+    try:
+        ok = all([run_day(con, str(d), a.country, llm_ok) for d in days])
+    finally:
+        stop_llm(started)
     sys.exit(0 if ok else 1)
 
 

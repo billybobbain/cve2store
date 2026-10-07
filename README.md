@@ -32,7 +32,19 @@ python3 -m venv .venv && .venv/bin/pip install google-play-scraper
   | `NVD_API_KEY` | none | [free from NVD](https://nvd.nist.gov/developers/request-an-api-key); without it, 5 requests / 30 s |
   | `LLM_URL` | `http://localhost:8090/v1/chat/completions` | |
   | `LLM_MODEL` | `coder27` | |
-  | `LLM_START_CMD` | none | how `daily.py` starts the model server if it's down |
+  | `LLM_START_CMD` | none | how `daily.py` starts the model server if it's down (it stops it again afterwards) |
+  | `LLM_GPU_GUARD` | `1` | defer the day if another program holds >1 GB of GPU memory (e.g. a long render) |
+  | `PUSH` | `1` | `run_daily.sh`: push the digest commit (`0` = commit only) |
+
+## Run it every day
+
+`run_daily.sh` catches up, then commits and pushes new digests; logs go to `logs/`.
+
+```
+crontab -e
+0 6 * * *  /path/to/cve2store/run_daily.sh
+```
+(06:00 local is after midnight UTC, so yesterday's NVD day is complete.)
 
 ## The daily job
 
