@@ -2,15 +2,46 @@
 
 From a CVE ID to the Google Play package name / App Store bundle ID of the affected
 mobile app, with store links, current store versions, and whether the current version
-is still affected.
+is still affected. Plus a daily job that does this for every new CVE.
+
+**Daily digests: [`digests/`](digests/)**, one file per day of new CVEs (UTC, by NVD
+publish date), links first.
 
 ```bash
 .venv/bin/python cve2store.py CVE-2026-23866        # links + one line each; -v for the full report
                                                      # (full report always saved to reports/<CVE>.md/.json)
 ```
 
-Needs coder27 (llama.cpp on :8090; `systemctl --user start coder27`). Override with
-`LLM_URL` / `LLM_MODEL` for another OpenAI-compatible server.
+```bash
+.venv/bin/python daily.py                    # catch up: each day since the last one done
+.venv/bin/python daily.py --day 2026-10-05   # one day;  --from/--to for a range
+```
+
+## Setup
+
+```bash
+python3 -m venv .venv && .venv/bin/pip install google-play-scraper
+```
+
+- **A local LLM** behind an OpenAI-compatible API that supports JSON-schema output.
+  Developed with llama.cpp's `llama-server` and Qwen3.8-27B (UD-Q3_K_XL) on a 16 GB GPU.
+- **Config** in `~/.config/cve2store/*.env` (`KEY=value` lines; keep it `chmod 600`):
+
+  | key | default | |
+  |---|---|---|
+  | `NVD_API_KEY` | none | [free from NVD](https://nvd.nist.gov/developers/request-an-api-key); without it, 5 requests / 30 s |
+  | `LLM_URL` | `http://localhost:8090/v1/chat/completions` | |
+  | `LLM_MODEL` | `coder27` | |
+  | `LLM_START_CMD` | none | how `daily.py` starts the model server if it's down |
+
+## The daily job
+
+For each day: every CVE NVD published; each CVE's own cve.org record (affected
+products and platforms arrive there long before NVD adds CPEs); a cheap filter for
+Android/iOS mentions; the model classifies **mobile app**, **platform** (OS, kernel,
+firmware, chipsets: skipped) or **not mobile**; the store lookup runs on the apps.
+State is kept in `cves.sqlite`; a day is marked done only if every step succeeded,
+so failed runs are retried by the next catch-up.
 
 ## How it works: the model proposes, the code verifies
 
@@ -40,5 +71,9 @@ cached in `cache/`, so re-running a CVE gives the same report.
 - Google Play often hides the version of big apps ("Varies with device"), so those
   are reported as unknown.
 - Store search is per country (`--country`, default `us`).
+- The daily filter only sees CVEs that mention Android/iOS somewhere in the record.
+  An app CVE that names neither platform (nor has CPEs yet) is missed.
+- Google Play has no official search API; the store lookup reads public pages and
+  may break when they change.
 - The model is Qwen3.8-27B at ~3-bit (UD-Q3_K_XL); the checks above exist so its
   mistakes are caught, not trusted.
