@@ -35,9 +35,27 @@ UA = {"User-Agent": "Mozilla/5.0 (cve2store)"}
 HERE = os.path.dirname(os.path.abspath(__file__))
 
 
+def load_config(path=os.path.expanduser("~/.config/cve2store")):
+    """KEY=VALUE lines from every *.env file there (e.g. NVD_API_KEY) into the environment.
+    Values already in the environment win.  Nothing secret lives in the repo."""
+    if os.path.isdir(path):
+        for name in sorted(os.listdir(path)):
+            if name.endswith(".env"):
+                with open(os.path.join(path, name)) as f:
+                    for line in f:
+                        line = line.strip()
+                        if line and not line.startswith("#") and "=" in line:
+                            k, v = line.split("=", 1)
+                            os.environ.setdefault(k.strip(), v.strip().strip('"').strip("'"))
+
+
+load_config()
+
+
 # ---- plumbing ------------------------------------------------------------------
-def get(url, as_json=True, timeout=30):
-    with urllib.request.urlopen(urllib.request.Request(url, headers=UA), timeout=timeout) as r:
+def get(url, as_json=True, timeout=30, headers=None):
+    h = dict(UA, **(headers or {}))
+    with urllib.request.urlopen(urllib.request.Request(url, headers=h), timeout=timeout) as r:
         data = r.read().decode("utf-8", "replace")
     return json.loads(data) if as_json else data
 
@@ -72,12 +90,18 @@ def host_root(url):
 
 
 # ---- 1. the CVE ----------------------------------------------------------------
+def nvd_headers():
+    key = os.environ.get("NVD_API_KEY")
+    return {"apiKey": key} if key else {}
+
+
 def fetch_cve(cve_id):
     rec = get(f"https://cveawg.mitre.org/api/cve/{cve_id}")
     cna = rec["containers"]["cna"]
     cpes = []
     try:
-        nvd = get(f"https://services.nvd.nist.gov/rest/json/cves/2.0?cveId={cve_id}")
+        nvd = get(f"https://services.nvd.nist.gov/rest/json/cves/2.0?cveId={cve_id}",
+                  headers=nvd_headers())
         for v in nvd.get("vulnerabilities", []):
             for conf in v["cve"].get("configurations", []):
                 for node in conf.get("nodes", []):
@@ -386,6 +410,26 @@ def short(cve, entries):
     return "\n".join(L)
 
 
+def lookup(cve_id, country="us"):
+    """The whole pipeline for one CVE; saves reports/<CVE>.md/.json.
+    -> (cve, entries, full markdown report)"""
+    cve = fetch_cve(cve_id.upper())
+    entries = extract(cve)
+    for e in entries:
+        cands = candidates(e, country)
+        e["cands_by_store"] = {s: [c for c in cands if c["store"] == s]
+                               for s in ("Google Play", "App Store")}
+        e["matches"] = {s: match(e, cands, cve, s) for s in ("Google Play", "App Store")}
+    md = report(cve, entries, country)
+    os.makedirs(os.path.join(HERE, "reports"), exist_ok=True)
+    stem = os.path.join(HERE, "reports", cve["id"])
+    with open(stem + ".md", "w") as f:
+        f.write(md + "\n")
+    with open(stem + ".json", "w") as f:
+        json.dump({"cve": cve, "entries": entries}, f, indent=1, default=str)
+    return cve, entries, md
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("cve")
@@ -393,20 +437,7 @@ def main():
     ap.add_argument("-v", "--verbose", action="store_true",
                     help="print the full report (it is always saved to reports/)")
     a = ap.parse_args()
-    cve = fetch_cve(a.cve.upper())
-    entries = extract(cve)
-    for e in entries:
-        cands = candidates(e, a.country)
-        e["cands_by_store"] = {s: [c for c in cands if c["store"] == s]
-                               for s in ("Google Play", "App Store")}
-        e["matches"] = {s: match(e, cands, cve, s) for s in ("Google Play", "App Store")}
-    md = report(cve, entries, a.country)
-    os.makedirs(os.path.join(HERE, "reports"), exist_ok=True)
-    stem = os.path.join(HERE, "reports", cve["id"])
-    with open(stem + ".md", "w") as f:
-        f.write(md + "\n")
-    with open(stem + ".json", "w") as f:
-        json.dump({"cve": cve, "entries": entries}, f, indent=1, default=str)
+    cve, entries, md = lookup(a.cve, a.country)
     print(md if a.verbose else short(cve, entries))
 
 
