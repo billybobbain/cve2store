@@ -354,10 +354,44 @@ def report(cve, entries, country):
     return "\n".join(L)
 
 
+def short(cve, entries):
+    """Links first, a few words each; warnings only when something needs a look."""
+    L, flags, related = [cve["id"]], [], []
+    for e in entries:
+        for store, m in e["matches"].items():
+            if m is None:
+                continue
+            plat = "Android" if store == "Google Play" else "iOS"
+            if m["match_id"] == "none":
+                L.append(f"{plat}: no store match for {e['product']}")
+                continue
+            c = m["listing"]
+            hit, why = verdict(e, c["version"])
+            state = {True: "AFFECTED", False: "fixed", None: "version unknown"}[hit]
+            ver = c["version"] if hit is not None else ""
+            L.append(f"{c['url']}  {c['id']}  {ver + ' ' if ver else ''}{state}")
+            related += m["related_ids"]
+            if not m["stable"]:
+                flags.append(f"{plat} match unstable (other answer: {m['second_answer']})")
+            if m["confidence"] != "high":
+                flags.append(f"{plat} match confidence {m['confidence']}")
+            if not m["site_matches_reference"]:
+                flags.append(f"{plat} developer site doesn't match the CVE's references")
+            if hit is None and "formats differ" in why:
+                flags.append(f"{plat}: {why}")
+        flags += [f"{e['product']}: {w}" for w in e["warnings"]]
+    if related:
+        L.append("related (not named in CVE): " + ", ".join(dict.fromkeys(related)))
+    L += [f"! {f}" for f in flags]
+    return "\n".join(L)
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("cve")
     ap.add_argument("--country", default="us")
+    ap.add_argument("-v", "--verbose", action="store_true",
+                    help="print the full report (it is always saved to reports/)")
     a = ap.parse_args()
     cve = fetch_cve(a.cve.upper())
     entries = extract(cve)
@@ -373,8 +407,7 @@ def main():
         f.write(md + "\n")
     with open(stem + ".json", "w") as f:
         json.dump({"cve": cve, "entries": entries}, f, indent=1, default=str)
-    print(md)
-    print(f"\n(wrote {stem}.md / .json)", file=sys.stderr)
+    print(md if a.verbose else short(cve, entries))
 
 
 if __name__ == "__main__":

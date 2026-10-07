@@ -5,7 +5,8 @@ mobile app, with store links, current store versions, and whether the current ve
 is still affected.
 
 ```bash
-.venv/bin/python cve2store.py CVE-2026-23866        # report printed + reports/<CVE>.md/.json
+.venv/bin/python cve2store.py CVE-2026-23866        # links + one line each; -v for the full report
+                                                     # (full report always saved to reports/<CVE>.md/.json)
 ```
 
 Needs coder27 (llama.cpp on :8090; `systemctl --user start coder27`). Override with
