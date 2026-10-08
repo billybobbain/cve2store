@@ -78,7 +78,16 @@ def nvd_day(day):
     while True:
         q = (f"{NVD}?pubStartDate={day}T00:00:00.000Z&pubEndDate={day}T23:59:59.999Z"
              f"&resultsPerPage=2000&startIndex={start}")
-        d = cs.get(q, headers=cs.nvd_headers(), timeout=120)
+        for attempt in range(5):           # NVD is slow and returns 503s at times
+            try:
+                d = cs.get(q, headers=cs.nvd_headers(), timeout=180)
+                break
+            except Exception as e:
+                if attempt == 4:
+                    raise
+                wait = 30 * (attempt + 1)
+                print(f"  NVD request failed ({e}); retrying in {wait}s", file=sys.stderr)
+                time.sleep(wait)
         out += [v["cve"] for v in d["vulnerabilities"]]
         start += d["resultsPerPage"]
         if start >= d["totalResults"]:
