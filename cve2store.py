@@ -419,8 +419,8 @@ def short(cve, entries):
                 flags.append(f"{plat} match unstable (other answer: {m['second_answer']})")
             if m["confidence"] != "high":
                 flags.append(f"{plat} match confidence {m['confidence']}")
-            if not m["site_matches_reference"]:
-                flags.append(f"{plat} developer site doesn't match the CVE's references")
+            # (no flag when the developer site isn't among the references: references
+            # are usually advisories and bug trackers, so its absence means little)
             if hit is None and "formats differ" in why:
                 flags.append(f"{plat}: {why}")
         flags += [f"{e['product']}: {w}" for w in e["warnings"]]

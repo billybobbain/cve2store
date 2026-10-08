@@ -48,8 +48,6 @@ def rows_for(cve_id, day, app, summary):
                 review.append(f"unstable match (alt: {m.get('second_answer')})")
             if m["confidence"] != "high":
                 review.append(f"{m['confidence']} confidence")
-            if not m.get("site_matches_reference"):
-                review.append("developer site not in CVE references")
             if hit is None and "formats differ" in why:
                 review.append("version formats differ")
             out.append(dict(base, platform="android" if store == "Google Play" else "ios",
