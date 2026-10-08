@@ -26,6 +26,7 @@ import json
 import os
 import re
 import sys
+import socket
 import time
 import urllib.parse
 import urllib.request
@@ -51,6 +52,9 @@ def load_config(path=os.path.expanduser("~/.config/cve2store")):
 
 
 load_config()
+# Every network call gets a deadline.  google-play-scraper opens URLs without a
+# timeout, and one Play request that never answered froze a backfill for 18 hours.
+socket.setdefaulttimeout(60)
 
 
 # ---- plumbing ------------------------------------------------------------------
