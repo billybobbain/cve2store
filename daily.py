@@ -296,6 +296,8 @@ def main():
         ok = all([run_day(con, str(d), a.country, llm_ok) for d in days])
     finally:
         stop_llm(started)
+        import export                      # monthly CSVs + digests/README.md index
+        export.export()
     sys.exit(0 if ok else 1)
 
 

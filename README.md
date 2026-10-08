@@ -4,8 +4,9 @@ From a CVE ID to the Google Play package name / App Store bundle ID of the affec
 mobile app, with store links, current store versions, and whether the current version
 is still affected. Plus a daily job that does this for every new CVE.
 
-**Daily digests: [`digests/`](digests/)**, one file per day of new CVEs (UTC, by NVD
-publish date), links first.
+**Start here: [`digests/`](digests/)**, an index of the days with mobile-app CVEs,
+plus **monthly CSVs in [`data/`](data/)**: one row per app with the store link,
+package / bundle ID, current store version and whether it's still affected.
 
 ```bash
 .venv/bin/python cve2store.py CVE-2026-23866        # links + one line each; -v for the full report

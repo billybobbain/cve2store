@@ -15,7 +15,7 @@ for f in ~/.config/cve2store/*.env; do [ -f "$f" ] && set -a && . "$f" && set +a
   echo "=== $(date '+%F %T') start"
   .venv/bin/python -u daily.py
   rc=$?
-  git add digests reports
+  git add digests reports data
   if ! git diff --cached --quiet; then
     git commit -q -m "digests: $(git diff --cached --name-only digests | xargs -r -n1 basename | sed 's/\.md$//' | paste -sd, -)"
     [ "${PUSH:-1}" = 1 ] && git push -q && echo "pushed"
