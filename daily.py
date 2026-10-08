@@ -44,7 +44,10 @@ CPE_MOBILE = re.compile(r":(android|iphone_os|ipados|ios):", re.I)
 CLASSIFY_SYSTEM = """You triage vulnerability records for a list of MOBILE APP vulnerabilities.
 Classify the record:
 - "mobile_app": an app a user installs or that ships on a phone as an app (including
-  vendor/preinstalled apps), on Android or iOS.
+  vendor/preinstalled apps), on Android or iOS. Browsers and other apps distributed
+  through Google Play or the App Store are mobile apps even when the bug is in their
+  engine: "Google Chrome on Android", "Chrome for iOS", Firefox, Edge, Brave, Samsung
+  Internet, Android System WebView.
 - "platform": the operating system, kernel, firmware, drivers, chipsets, basebands or
   OS components (e.g. Android framework, Bluetooth/NFC stacks, WebKit/iOS itself).
 - "not_mobile": anything else (servers, desktop software, libraries not specific to a

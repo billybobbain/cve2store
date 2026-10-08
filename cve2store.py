@@ -26,6 +26,7 @@ import json
 import os
 import re
 import sys
+import time
 import urllib.parse
 import urllib.request
 
@@ -208,6 +209,21 @@ def play_search(term, country, limit=8):
     return out
 
 
+def cached_search(fn, term, country, ttl=12 * 3600):
+    """Store searches cached for ttl seconds: a release day can bring 20+ CVEs for one
+    app (e.g. Chrome), and each would otherwise repeat the same slow lookups."""
+    key = hashlib.sha256(f"{fn.__name__}|{term}|{country}".encode()).hexdigest()[:20]
+    path = os.path.join(HERE, "cache", "store", f"{key}.json")
+    if os.path.exists(path) and time.time() - os.path.getmtime(path) < ttl:
+        with open(path) as f:
+            return json.load(f)
+    hits = fn(term, country)
+    os.makedirs(os.path.dirname(path), exist_ok=True)
+    with open(path, "w") as f:
+        json.dump(hits, f)
+    return hits
+
+
 def candidates(entry, country):
     stores = {"android": [play_search], "ios": [appstore_search]}.get(
         entry["platform"], [play_search, appstore_search])
@@ -216,7 +232,7 @@ def candidates(entry, country):
     for fn in stores:
         for t in terms:
             try:
-                hits = fn(t, country)
+                hits = cached_search(fn, t, country)
             except Exception as e:
                 print(f"(search '{t}' failed: {e})", file=sys.stderr)
                 continue
