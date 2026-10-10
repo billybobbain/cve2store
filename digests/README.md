@@ -2,8 +2,9 @@
 
 Mobile-app CVEs by day (UTC, NVD publish date), with the store links. Only days that have any are listed; every day processed has a file here.
 
-## 2026-10: 66 mobile-app CVEs · [CSV](../data/2026-10.csv)
+## 2026-10: 68 mobile-app CVEs · [CSV](../data/2026-10.csv)
 
+- [2026-10-09](2026-10-09.md): 2 (Mindwtr, SwitchBot Lock Series App)
 - [2026-10-08](2026-10-08.md): 2 (Ticket Ryutsu Center)
 - [2026-10-07](2026-10-07.md): 1 (Cisco Jabber)
 - [2026-10-06](2026-10-06.md): 58 (Chrome, Google Chrome, HPE Networking ClearPass Policy Manager, Messages, Schmooze, vCast)
