@@ -2,8 +2,9 @@
 
 Mobile-app CVEs by day (UTC, NVD publish date), with the store links. Only days that have any are listed; every day processed has a file here.
 
-## 2026-10: 69 mobile-app CVEs · [CSV](../data/2026-10.csv)
+## 2026-10: 70 mobile-app CVEs · [CSV](../data/2026-10.csv)
 
+- [2026-10-11](2026-10-11.md): 1 (Docx Reader Office Viewer App)
 - [2026-10-10](2026-10-10.md): 1 (ExifTool for photo and video)
 - [2026-10-09](2026-10-09.md): 2 (Mindwtr, SwitchBot Lock Series App)
 - [2026-10-08](2026-10-08.md): 2 (Ticket Ryutsu Center)
