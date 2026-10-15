@@ -2,8 +2,10 @@
 
 Mobile-app CVEs by day (UTC, NVD publish date), with the store links. Only days that have any are listed; every day processed has a file here.
 
-## 2026-10: 73 mobile-app CVEs · [CSV](../data/2026-10.csv)
+## 2026-10: 91 mobile-app CVEs · [CSV](../data/2026-10.csv)
 
+- [2026-10-14](2026-10-14.md): 6 (Hippoo Mobile App for WooCommerce, InvoiceShelf)
+- [2026-10-13](2026-10-13.md): 12 (Firefox for iOS, Google Chrome, Microsoft Office for Android, Microsoft Power Apps, OpenVPN, Polaris Office App +2 more)
 - [2026-10-12](2026-10-12.md): 3 (DigiDoc, SHAREit, Samsung Account)
 - [2026-10-11](2026-10-11.md): 1 (Docx Reader Office Viewer App)
 - [2026-10-10](2026-10-10.md): 1 (ExifTool for photo and video)
