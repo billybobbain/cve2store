@@ -2,6 +2,9 @@
 
 Mobile-app CVEs by day (UTC, NVD publish date), with the store links. Only days that have any are listed; every day processed has a file here.
 
+## 2026-11: 0 mobile-app CVEs
+
+
 ## 2026-10: 100 mobile-app CVEs · [CSV](../data/2026-10.csv)
 
 - [2026-10-19](2026-10-19.md): 4 (Element X iOS, PingTools Network Utilities, Sleipnir Mobile, TickTick)
