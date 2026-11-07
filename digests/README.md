@@ -2,8 +2,12 @@
 
 Mobile-app CVEs by day (UTC, NVD publish date), with the store links. Only days that have any are listed; every day processed has a file here.
 
-## 2026-11: 0 mobile-app CVEs
+## 2026-11: 37 mobile-app CVEs · [CSV](../data/2026-11.csv)
 
+- [2026-11-05](2026-11-05.md): 10 (Chewy, FairEmail, FreeReels, MatchPoint, Matchpoint, NewsBreak +1 more)
+- [2026-11-04](2026-11-04.md): 6 (Alan: Health Insurance, VitaFit)
+- [2026-11-03](2026-11-03.md): 20 (Google Chrome)
+- [2026-11-02](2026-11-02.md): 1 (Attendo)
 
 ## 2026-10: 100 mobile-app CVEs · [CSV](../data/2026-10.csv)
 
