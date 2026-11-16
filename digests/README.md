@@ -2,8 +2,11 @@
 
 Mobile-app CVEs by day (UTC, NVD publish date), with the store links. Only days that have any are listed; every day processed has a file here.
 
-## 2026-11: 44 mobile-app CVEs · [CSV](../data/2026-11.csv)
+## 2026-11: 69 mobile-app CVEs · [CSV](../data/2026-11.csv)
 
+- [2026-11-12](2026-11-12.md): 1 (Mi Browser)
+- [2026-11-11](2026-11-11.md): 7 (Google Chrome, Sleipnir Mobile, Viber)
+- [2026-11-10](2026-11-10.md): 18 (Firefox for Android, Flock Installer, GV-Access, GV-Cloud, GV-Face, Google Chrome +2 more)
 - [2026-11-09](2026-11-09.md): 6 (AM CLUB, Firefox for iOS, LaserGest)
 - [2026-11-05](2026-11-05.md): 10 (Chewy, FairEmail, FreeReels, MatchPoint, Matchpoint, NewsBreak +1 more)
 - [2026-11-04](2026-11-04.md): 6 (Alan: Health Insurance, VitaFit)
